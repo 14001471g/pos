@@ -33,6 +33,7 @@ public class POSJPanel extends JPanel {
 	private GridBagLayout POSPanelLayout= new GridBagLayout();
 	private List<IceCream> iceCreamFlavorList = null;
 	private List<IceCream> iceCreamDecoratorList = null;
+	private JLabel totalLabel; 
 	
 	public POSJPanel(JFrame parent) {
 		this.parent = parent;
@@ -43,8 +44,13 @@ public class POSJPanel extends JPanel {
 		iceCreamFlavorList.add(new IceCreamFlavor("Chocolate",20));
 		iceCreamFlavorList.add(new IceCreamFlavor("Vanilla",20));
 		
-		iceCreamDecoratorList.add(new IceCreamDecorator("M&M",5));
-		iceCreamDecoratorList.add(new IceCreamDecorator("Strawberry",5));
+		final IceCream decoratorMM = new IceCreamDecorator("M&M",5);
+		addDecoratorAction(decoratorMM);
+		iceCreamDecoratorList.add(decoratorMM);
+		
+		final IceCream decoratorStrawberry = new IceCreamDecorator("Strawberry",5);
+		addDecoratorAction(decoratorStrawberry);
+		iceCreamDecoratorList.add(decoratorStrawberry);
 		
 		pos.setIceCreamFlavorList(iceCreamFlavorList);
 		pos.setIceCreamDecoratorList(iceCreamDecoratorList);
@@ -60,7 +66,7 @@ public class POSJPanel extends JPanel {
 		c.weightx = 1.0;
 		c.weighty = 1.0;// request any extra vertical space
 		
-		final JLabel totalLabel = new JLabel(TOTAL+pos.getTotalPrice());
+		totalLabel = new JLabel(TOTAL+pos.getTotalPrice());
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridwidth = 1;
 		c.gridx = 1;
@@ -110,7 +116,8 @@ public class POSJPanel extends JPanel {
 	            {
 	            	 if (pos.getIceCream() == null){
 	            		 pos.setIceCream(iceCreamFlavor);
-	            		 totalLabel.setText(TOTAL+pos.getTotalPrice());
+	            		 updatePrice();
+	            		 
 	            	 }
 	            }
 	        });      
@@ -132,19 +139,7 @@ public class POSJPanel extends JPanel {
 		JPanel decoratorPanel = new JPanel(new GridLayout(0,1));
 	
 		for (int i=0; i < iceCreamDecoratorList.size(); i++){
-			final IceCream decorator = iceCreamDecoratorList.get(i);
-			
-			decorator.addActionListener(new ActionListener() {				 
-	            public void actionPerformed(ActionEvent e)
-	            {
-	            	if(pos.getIceCream() != null){
-		           		pos.addIceCreamDecorator(decorator);
-		           		totalLabel.setText(TOTAL+pos.getTotalPrice());
-	            	}
-		        }
-	        });      
-			 
-			decoratorPanel.add(decorator);
+			decoratorPanel.add(iceCreamDecoratorList.get(i));
 		}	
 		
 		JScrollPane decoratorScrollPane = new JScrollPane(decoratorPanel, 
@@ -164,6 +159,10 @@ public class POSJPanel extends JPanel {
 		this.repaint();
 		POSPanelLayout.layoutContainer(this);
 		
+	}
+	
+	public void updatePrice(){
+		totalLabel.setText(TOTAL+pos.getTotalPrice());
 	}
 	
 	public void showDialog(){
@@ -201,8 +200,10 @@ public class POSJPanel extends JPanel {
 	
 				}
 				else {
-					iceCreamDecoratorList.add(new IceCreamDecorator(newName.getText(),Double.parseDouble(newUnitPrice.getText())));
+					final IceCream decorator = new IceCreamDecorator(newName.getText(),Double.parseDouble(newUnitPrice.getText()));
+					iceCreamDecoratorList.add(decorator);
 					pos.setIceCreamDecoratorList(iceCreamDecoratorList);
+					addDecoratorAction(decorator);  
 				}
 				refreshLayout();
 			}
@@ -234,5 +235,18 @@ public class POSJPanel extends JPanel {
 		dialog.setSize(new Dimension(400, 150));
 		dialog.setLocationRelativeTo(this);
 		dialog.setVisible(true);
+	}
+	
+	private void addDecoratorAction(IceCream decorator){
+		final IceCream iceCreamDecorator = decorator;
+		iceCreamDecorator.addActionListener(new ActionListener() {				 
+            public void actionPerformed(ActionEvent e)
+            {
+            	if(pos.getIceCream() != null){
+	           		pos.addIceCreamDecorator(iceCreamDecorator);
+	           		updatePrice();
+	           	}
+	        }
+        });
 	}
 }
